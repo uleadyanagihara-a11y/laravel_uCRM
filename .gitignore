@@ -13,3 +13,10 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+# --- AI & Editor Tools ---
+.cursor/
+.windsurf/
+.ai_history/
+.claude/
+.history/
+*.log
