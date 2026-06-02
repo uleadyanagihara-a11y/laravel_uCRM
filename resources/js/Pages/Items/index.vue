@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import {
     Table,
     TableBody,
@@ -9,7 +9,8 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from '@/components/ui/table';
+} from '@/Components/ui/table';
+import FlashMessage from '@/Components/FlashMessage.vue';
 
 defineProps({
     items: {
@@ -26,48 +27,46 @@ defineProps({
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">商品一覧</h2>
         </template>
-
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
+                        <FlashMessage />
+                        <div class="mb-4 flex justify-end">
+                            <Link as="button" :href="route('items.create')" type="button" 
+                            class="rounded-md bg-indigo-600 px-4 py-2 
+                            text-sm font-semibold text-white shadow-sm hover:bg-indigo-700
+                            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">商品登録</Link>
+                                                 
+                        </div>                                     
                         <Table>
-                            <TableCaption>登録済み商品の一覧です。</TableCaption>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>商品名</TableHead>
-                                    <TableHead>メモ</TableHead>
-                                    <TableHead class="text-right">価格</TableHead>
-                                    <TableHead>販売状態</TableHead>
+                                <TableHead class="w-[100px]">Id</TableHead>
+                                <TableHead>商品名</TableHead>
+                                <TableHead>価格</TableHead>
+                                <TableHead>ステータス</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                <TableRow v-for="item in items" :key="item.id">
+                                <TableRow 
+                                    v-for="item in items"
+                                    :key="item.id"
+                                >
                                     <TableCell class="font-medium">
-                                        {{ item.name }}
+                                        <Link class="text-blue-400" :href="route('items.show',{ item: item.id })">
+                                            {{item.id}}
+                                        </Link>
                                     </TableCell>
-                                    <TableCell class="text-muted-foreground">
-                                        {{ item.memo ?? '-' }}
-                                    </TableCell>
-                                    <TableCell class="text-right">
-                                        {{ Number(item.price).toLocaleString() }}円
-                                    </TableCell>
+                                    <TableCell>{{item.name}}</TableCell>
+                                    <TableCell>{{item.price}}</TableCell>
                                     <TableCell>
-                                        <span
-                                            class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
-                                            :class="item.is_selling ? 'bg-green-100 text-green-800' : 'bg-muted text-muted-foreground'"
-                                        >
-                                            {{ item.is_selling ? '販売中' : '停止中' }}
-                                        </span>
+                                        <span v-if="item.is_selling === 1">販売中</span>
+                                        <span v-if="item.is_selling === 0">停止中</span>
                                     </TableCell>
-                                </TableRow>
-                                <TableRow v-if="items.length === 0">
-                                    <TableCell colspan="4" class="h-24 text-center text-muted-foreground">
-                                        商品が登録されていません。
-                                    </TableCell>
-                                </TableRow>
+                                </TableRow>                                
                             </TableBody>
-                        </Table>
+                        </Table>                                                         
                     </div>
                 </div>
             </div>
