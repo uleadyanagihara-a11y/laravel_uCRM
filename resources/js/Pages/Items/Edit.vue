@@ -122,6 +122,7 @@ const updateItem = handleSubmit((values) => {
                                         <InputError :message="validationErrors.price || props.errors?.price" />
                                     </div>
                                 </div>
+                                
                                 <div class="space-y-2">
                                     <p class="text-sm font-medium">ステータス</p>
                                     <div class="flex items-center gap-6">
