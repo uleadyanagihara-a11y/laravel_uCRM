@@ -1,0 +1,1 @@
+import{F as e,S as t}from"./app-D361k0gD.js";var n=(e,t)=>{let n=e.__vccOpts||e;for(let[e,r]of t)n[e]=r;return n},r={},i={src:`/images/logo.png`,alt:`Application logo`,class:`object-contain`};function a(n,r){return e(),t(`img`,i)}var o=n(r,[[`render`,a]]);export{o as t};

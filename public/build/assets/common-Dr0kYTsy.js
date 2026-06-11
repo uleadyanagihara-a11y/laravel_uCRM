@@ -1,0 +1,1 @@
+var e=e=>{var t=e.replace(/\r\n/g,`<br>`);return t=t.replace(/(\n|\r)/g,`<br>`),t},t=()=>{let e=new Date,t=e.getFullYear(),n=(`0`+(e.getMonth()+1)).slice(-2),r=(`0`+e.getDate()).slice(-2);return t+`-`+n+`-`+r};export{e as n,t};

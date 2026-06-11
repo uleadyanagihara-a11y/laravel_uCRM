@@ -1,0 +1,1 @@
+import{$ as e,F as t,Q as n,S as r,t as i,v as a,x as o}from"./app-D361k0gD.js";var s={__name:`FlashMessage`,setup(s){let c=i(),l=a(()=>c.props.flash?.message),u=a(()=>c.props.flash?.status);return(i,a)=>l.value?(t(),r(`div`,{key:0,class:n([u.value===`danger`?`bg-red-500`:`bg-blue-300`,`mb-4 text-white p-4`])},e(l.value),3)):o(``,!0)}};export{s as t};
