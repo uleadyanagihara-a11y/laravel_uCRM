@@ -6,6 +6,9 @@ use Inertia\Inertia;
 use App\Http\Controllers\InertiaTestController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\PurchaseController;
+use App\Models\Customer;
+use Illuminate\Http\Request;
 
 Route::resource('items', ItemController::class)
 ->middleware(['auth', 'verified']);
@@ -13,7 +16,14 @@ Route::resource('items', ItemController::class)
 Route::resource('customers', CustomerController::class)
 ->middleware(['auth', 'verified']);
 
+Route::resource('purchases', PurchaseController::class)
+->middleware(['auth', 'verified']);
 
+Route::get('/searchCustomers', function (Request $request) {
+    return Customer::searchCustomers($request->search)
+        ->select('id', 'name', 'kana', 'tel')
+        ->paginate(50);
+})->middleware(['auth', 'verified'])->name('customers.search');
 /*
 |--------------------------------------------------------------------------
 | Web Routes

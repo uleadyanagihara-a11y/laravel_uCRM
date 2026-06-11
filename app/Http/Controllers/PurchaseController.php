@@ -9,6 +9,7 @@ use App\Http\Requests\UpdatePurchaseRequest;
 use Inertia\Inertia;
 use App\Models\Customer;
 use App\Models\Item;
+use Illuminate\Support\Facades\DB;
 
 
 class PurchaseController extends Controller
@@ -49,7 +50,54 @@ class PurchaseController extends Controller
      */
     public function store(StorePurchaseRequest $request)
     {
-        //
+        // dd($request);
+        DB::beginTransaction();
+
+        try {
+            $purchase = Purchase::create([
+                'customer_id' => $request->customer_id,
+                'status' => $request->status
+            ]);
+
+            foreach ($request->items as $item) {
+                $purchase->items()->attach($item['id'], [
+                    'quantity' => $item['quantity']
+                ]);
+            }
+
+            DB::commit();
+
+            return to_route('dashboard');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+       
+        
+        // $validated = $request->validated();
+
+        // DB::transaction(function () use ($validated) {
+        //     $purchase = Purchase::create([
+        //         'customer_id' => $validated['customer_id'],
+        //         'status' => $validated['status'],
+        //     ]);
+
+        //     $items = collect($validated['items'])->mapWithKeys(function ($item) {
+        //         return [
+        //             $item['id'] => ['quantity' => $item['quantity']],
+        //         ];
+        //     });
+
+        //     $purchase->items()->attach($items->all());
+        // });
+
+        // return to_route('purchases.create')
+        //     ->with([
+        //         'message' => '登録しました',
+        //         'status' => 'success',
+        //     ]);
     }
 
     /**

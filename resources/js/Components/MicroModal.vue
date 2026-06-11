@@ -1,7 +1,8 @@
 <script setup>
 import { Input } from '@/Components/ui/input';
+import axios from 'axios';
 import MicroModal from 'micromodal';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 
 const props = defineProps({
     modalId: {
@@ -18,13 +19,49 @@ const props = defineProps({
     },
 });
 
-onMounted(() => {
+const emit = defineEmits(['customer-selected']);
+
+const search = ref('');
+const customers = ref([]);
+const isSearching = ref(false);
+const searchError = ref('');
+const hasSearched = ref(false);
+
+const searchCustomers = async () => {
+    searchError.value = '';
+    isSearching.value = true;
+    hasSearched.value = true;
+
+    try {
+        const response = await axios.get(route('customers.search'), {
+            params: {
+                search: search.value,
+            },
+        });
+
+        customers.value = response.data.data;
+    } catch (error) {
+        customers.value = [];
+        searchError.value = '検索に失敗しました。';
+        console.error(error);
+    } finally {
+        isSearching.value = false;
+    }
+};
+
+const selectCustomer = (customer) => {
+    emit('customer-selected', customer);
+    MicroModal.close(props.modalId);
+};
+
+onMounted(async () => {
     MicroModal.init({
         disableScroll: true,
         awaitOpenAnimation: true,
         awaitCloseAnimation: true,
     });
 });
+
 </script>
 
 <template>
@@ -39,12 +76,68 @@ onMounted(() => {
                 </header>
                 <main class="modal__content" :id="`${props.modalId}-content`">
                     <div class="space-y-4">
-                        <Input
-                            type="text"
-                            placeholder="会員名・フリガナで検索"
-                        />
-                        <p class="text-sm text-gray-500">
-                            検索結果の表示領域です。
+                        <div class="flex gap-2">
+                            <Input
+                                v-model="search"
+                                type="text"
+                                placeholder="会員名・フリガナ・電話番号で検索"
+                                @keyup.enter="searchCustomers"
+                            />
+                            <button
+                                type="button"
+                                class="modal__btn modal__btn-primary whitespace-nowrap"
+                                :disabled="isSearching"
+                                @click="searchCustomers"
+                            >
+                                {{ isSearching ? '検索中' : '検索する' }}
+                            </button>
+                        </div>
+
+                        <p v-if="searchError" class="text-sm text-red-600">
+                            {{ searchError }}
+                        </p>
+
+                        <div v-if="customers.length" class="overflow-x-auto rounded-md border">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b bg-gray-50 text-left">
+                                        <th class="px-3 py-2">Id</th>
+                                        <th class="px-3 py-2">氏名</th>
+                                        <th class="px-3 py-2">カナ</th>
+                                        <th class="px-3 py-2">電話番号</th>
+                                        <th class="px-3 py-2"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        v-for="customer in customers"
+                                        :key="customer.id"
+                                        class="border-b last:border-b-0"
+                                    >
+                                        <td class="px-3 py-2">{{ customer.id }}</td>
+                                        <td class="px-3 py-2">{{ customer.name }}</td>
+                                        <td class="px-3 py-2">{{ customer.kana }}</td>
+                                        <td class="px-3 py-2">{{ customer.tel }}</td>
+                                        <td class="px-3 py-2 text-right">
+                                            <button
+                                                type="button"
+                                                class="modal__btn modal__btn-primary"
+                                                @click="selectCustomer(customer)"
+                                            >
+                                                選択
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <p v-else-if="hasSearched && !isSearching" class="text-sm text-gray-500">
+                            検索結果はありません。
+                        </p>
+
+                        <p v-else class="text-sm text-gray-500">
+                            会員名・フリガナ・電話番号で検索できます。
                         </p>
                     </div>
                 </main>

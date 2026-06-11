@@ -1,5 +1,185 @@
-<script setup></script>
+<script setup>
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import InputError from '@/Components/InputError.vue';
+import MicroModal from '@/Components/MicroModal.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
+import { getToday } from '@/common';
+import { computed, onMounted, reactive, ref } from 'vue';
+
+const props = defineProps({
+    customers: Array,
+    items: Array,
+    errors: {
+        type: Object,
+        default: () => ({}),
+    },
+});
+
+const itemList = ref([]);
+
+const form = reactive({
+    date: null,
+    customer_id: null,
+    status: true,
+    items: [],
+});
+
+const quantity = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+onMounted(() => {
+    form.date = getToday();
+    itemList.value = props.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: 0,
+    }));
+});
+
+const totalPrice = computed(() => {
+    return itemList.value.reduce((total, item) => {
+        return total + item.price * item.quantity;
+    }, 0);
+});
+
+const storePurchase = () => {
+    form.items = itemList.value
+        .filter((item) => item.quantity > 0)
+        .map((item) => ({
+            id: item.id,
+            quantity: Number(item.quantity),
+        }));
+
+    router.post(route('purchases.store'), form);
+};
+
+const selectedCustomer = ref(null);
+
+const selectCustomer = (customer) => {
+    form.customer_id = customer.id;
+    selectedCustomer.value = customer;
+};
+</script>
 
 <template>
-purchase/create
+    <Head title="購入画面" />
+
+    <AuthenticatedLayout>
+        <template #header>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">購入画面</h2>
+        </template>
+
+        <div class="py-12">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900">
+                        <form @submit.prevent="storePurchase" class="space-y-8">
+                            <div v-if="$page.props.flash.message" class="rounded-md bg-green-50 p-4 text-sm text-green-700">
+                                {{ $page.props.flash.message }}
+                            </div>
+
+                            <fieldset class="grid gap-6 md:grid-cols-2">
+                                <div class="space-y-2">
+                                    <label for="date" class="text-sm font-medium">
+                                        日付
+                                    </label>
+                                    <Input
+                                        id="date"
+                                        type="date"
+                                        name="date"
+                                        v-model="form.date"
+                                    />
+                                </div>
+
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <label for="customer" class="text-sm font-medium">
+                                            顧客名
+                                        </label>
+                                        <MicroModal @customer-selected="selectCustomer" />
+                                    </div>
+                                    <div v-if="selectedCustomer" class="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
+                                        {{ selectedCustomer.name }}（{{ selectedCustomer.kana }}）
+                                    </div>
+                                    <InputError :message="props.errors.customer_id" />
+                                </div>
+                            </fieldset>
+
+                            <div class="flex justify-end gap-2">
+                                
+                            </div>
+
+                            <div class="space-y-3">
+                                <h3 class="text-sm font-medium">商品・サービス</h3>
+
+                                <div class="overflow-x-auto rounded-md border">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead class="w-[100px]">Id</TableHead>
+                                                <TableHead>商品名</TableHead>
+                                                <TableHead class="text-right">金額</TableHead>
+                                                <TableHead>数量</TableHead>
+                                                <TableHead class="text-right">小計</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            <TableRow
+                                                v-for="item in itemList"
+                                                :key="item.id"
+                                            >
+                                                <TableCell class="font-medium">
+                                                    {{ item.id }}
+                                                </TableCell>
+                                                <TableCell>{{ item.name }}</TableCell>
+                                                <TableCell class="text-right">
+                                                    {{ item.price.toLocaleString() }} 円
+                                                </TableCell>
+                                                <TableCell>
+                                                    <select
+                                                        name="quantity"
+                                                        v-model="item.quantity"
+                                                        class="h-9 w-20 rounded-md border border-input bg-background px-3 py-1 text-sm"
+                                                    >
+                                                        <option v-for="q in quantity" :key="q" :value="q">
+                                                            {{ q }}
+                                                        </option>
+                                                    </select>
+                                                </TableCell>
+                                                <TableCell class="text-right">
+                                                    {{ (item.price * item.quantity).toLocaleString() }} 円
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </div>
+
+                                <InputError :message="props.errors.items" />
+                            </div>
+
+                            <div class="flex flex-col gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="text-lg font-semibold">
+                                    合計: {{ totalPrice.toLocaleString() }} 円
+                                </div>
+
+                                <Button type="submit" class="rounded-md bg-indigo-600 text-sm font-semibold text-white shadow-sm">
+                                    登録する
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AuthenticatedLayout>
 </template>
