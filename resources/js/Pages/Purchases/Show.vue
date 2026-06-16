@@ -74,9 +74,9 @@ const totalPrice = computed(() => props.order[0]?.total ?? 0);
                                     <TableBody>
                                         <TableRow
                                             v-for="item in items"
-                                            :key="item.pivot_id"
+                                            :key="item.item_id"
                                         >
-                                            <TableCell class="font-medium">{{ item.pivot_id }}</TableCell>
+                                            <TableCell class="font-medium">{{ item.item_id }}</TableCell>
                                             <TableCell>{{ item.item_name }}</TableCell>
                                             <TableCell class="text-right">
                                                 {{ item.item_price.toLocaleString() }} 円

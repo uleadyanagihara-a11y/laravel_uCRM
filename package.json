@@ -26,6 +26,7 @@
         "@vueuse/core": "^14.3.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
+        "dayjs": "^1.11.21",
         "micromodal": "^0.7.0",
         "radix-vue": "^1.9.17",
         "reka-ui": "^2.9.8",

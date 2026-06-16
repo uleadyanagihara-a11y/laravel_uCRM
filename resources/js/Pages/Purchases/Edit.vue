@@ -27,6 +27,7 @@ const props = defineProps({
 const itemList = ref([]);
 
 const form = reactive({
+    id: props.order[0].id,
     date: dayjs(props.order[0].created_at).format("YYYY-MM-DD"),
     customer_id: props.order[0].customer_id,
     status: props.order[0].status,
@@ -50,7 +51,7 @@ const totalPrice = computed(() => {
     }, 0);
 });
 
-const storePurchase = () => {
+const updatePurchase = id => {
     form.items = itemList.value
         .filter((item) => item.quantity > 0)
         .map((item) => ({
@@ -58,7 +59,7 @@ const storePurchase = () => {
             quantity: Number(item.quantity),
         }));
 
-    router.post(route('purchases.store'), form);
+    router.put(route('purchases.update', { purchase: id }), form);
 };
 
 const selectedCustomer = ref(null);
@@ -77,7 +78,7 @@ const selectedCustomer = ref(null);
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
-                        <form @submit.prevent="storePurchase" class="space-y-8">
+                        <form @submit.prevent="updatePurchase(form.id)" class="space-y-8">
                             <div v-if="$page.props.flash.message" class="rounded-md bg-green-50 p-4 text-sm text-green-700">
                                 {{ $page.props.flash.message }}
                             </div>
@@ -166,27 +167,31 @@ const selectedCustomer = ref(null);
                                 <InputError :message="props.errors.items" />
                             </div>
 
-                            <div class="flex flex-col gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="border-t pt-6 space-y-4">
                                 <div class="text-lg font-semibold">
                                     合計: {{ totalPrice.toLocaleString() }} 円
                                 </div>
 
                                 <div class="space-y-2">
-                                    <div class="space-y-2">
-                                        <label for="customer" class="text-sm font-medium">
-                                            顧客名
+                                    <label class="text-sm font-medium">ステータス</label>
+                                    <div class="flex items-center gap-4">
+                                        <label class="flex items-center gap-1 text-sm">
+                                            <input type="radio" v-model="form.status" :value="1" />
+                                            未キャンセル
                                         </label>
-                                         <Input disabled
-                                        id="customer"
-                                        type="text"
-                                        name="customer"
-                                        :model-value="props.order[0].customer_name"
-                                        />
+                                        <label class="flex items-center gap-1 text-sm">
+                                            <input type="radio" v-model="form.status" :value="0" />
+                                            キャンセルする
+                                        </label>
+                                    </div>
                                 </div>
 
-                                <Button type="submit" class="rounded-md bg-indigo-600 text-sm font-semibold text-white shadow-sm">
-                                    登録する
-                                </Button>
+                                <div class="flex justify-end">
+                                    <Button type="submit" class="rounded-md bg-indigo-600 text-sm font-semibold
+                                     text-white shadow-sm">
+                                        更新する
+                                    </Button>
+                                </div>
                             </div>
                         </form>
                     </div>
