@@ -3,6 +3,13 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { reactive, onMounted} from 'vue'
 import { getToday } from '@/common'
+import BarChart from '@/Components/BarChart.vue'
+import Table from '@/Components/ui/table/Table.vue'
+import TableHeader from '@/Components/ui/table/TableHeader.vue'
+import TableBody from '@/Components/ui/table/TableBody.vue'
+import TableRow from '@/Components/ui/table/TableRow.vue'
+import TableHead from '@/Components/ui/table/TableHead.vue'
+import TableCell from '@/Components/ui/table/TableCell.vue'
 
 onMounted(() => {
     form.startDate = getToday()
@@ -11,8 +18,29 @@ onMounted(() => {
 
 const form = reactive({
     startDate: null,
-    endDate: null
+    endDate: null,
+    type: 'perDay'
 })
+const data = reactive({})
+const getData = async() => {
+    try{
+        await axios.get('/api/analysis/', {
+            params:{
+                startDate: form.startDate,
+                endDate: form.endDate,
+                type: form.type
+            }
+        })
+        .then(res => {
+            data.data = res.data.data
+            data.labels = res.data.labels
+            data.totals = res.data.totals
+            console.log(res.data)
+        })
+    } catch (e){
+        console.log(e.message)
+    }
+}
 </script>
 
 <template>
@@ -27,13 +55,31 @@ const form = reactive({
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
-                        <form>
+                        <form @submit.prevent="getData">
                             From: <input type="date" name="startDate" v-model="form.startDate">
-                            To: <input type="date" name="endDate" v-model="form.startDate"><br>
+                            To: <input type="date" name="endDate" v-model="form.endDate"><br>
                             <button class="rounded-md bg-indigo-600 text-sm font-semibold text-white shadow-sm">
                                 分析する
                             </button>
                         </form>
+                        <BarChart v-if="data.data" :data="data" />
+                            <Table v-if="data.data">
+                                <TableHeader>
+                                    <TableRow>
+                                    <TableHead class="w-[100px]">年月日</TableHead>
+                                    <TableHead>金額</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow 
+                                        v-for="item in data.data"
+                                        :key="item.date"
+                                    >                                       
+                                        <TableCell>{{item.date}}</TableCell>
+                                        <TableCell>{{item.total}}</TableCell>                                        
+                                    </TableRow>                                
+                                </TableBody>
+                            </Table>                                                         
                     </div>
                 </div>
             </div>
