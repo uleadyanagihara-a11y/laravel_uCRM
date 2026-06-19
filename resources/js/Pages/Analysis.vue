@@ -10,6 +10,7 @@ import TableBody from '@/Components/ui/table/TableBody.vue'
 import TableRow from '@/Components/ui/table/TableRow.vue'
 import TableHead from '@/Components/ui/table/TableHead.vue'
 import TableCell from '@/Components/ui/table/TableCell.vue'
+import ResultTable from '@/Components/ResultTable.vue'
 
 onMounted(() => {
     form.startDate = getToday()
@@ -35,6 +36,7 @@ const getData = async() => {
             data.data = res.data.data
             data.labels = res.data.labels
             data.totals = res.data.totals
+            data.type = res.data.type
             console.log(res.data)
         })
     } catch (e){
@@ -56,14 +58,26 @@ const getData = async() => {
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <form @submit.prevent="getData">
-                            From: <input type="date" name="startDate" v-model="form.startDate">
-                            To: <input type="date" name="endDate" v-model="form.endDate"><br>
-                            <button class="rounded-md bg-indigo-600 text-sm font-semibold text-white shadow-sm">
-                                分析する
-                            </button>
+                            分析方法<br>
+                            <input type="radio" v-model="form.type" value="perDay" checked>
+                                <span class="mr-2">日別</span>
+                            <input type="radio" v-model="form.type" value="perMonth">
+                                <span class="mr-2">月別</span>
+                            <input type="radio" v-model="form.type" value="perYear">
+                                <span class="mr-2">年別</span>
+                            <input type="radio" v-model="form.type" value="decile">
+                                <span class="mr-2">デシル分析</span>
+                            <br>
+                                    From: <input type="date" name="startDate" v-model="form.startDate">
+                                    To: <input type="date" name="endDate" v-model="form.endDate"><br>
+                                    <button type="submit" class="rounded-md bg-indigo-600 
+                                    text-sm font-semibold text-white shadow-sm">
+                                        分析する
+                                    </button>
                         </form>
                         <BarChart v-if="data.data" :data="data" />
-                            <Table v-if="data.data">
+                        <ResultTable :data="data" />
+                            <Table v-if="data.data && data.type !== 'decile'">
                                 <TableHeader>
                                     <TableRow>
                                     <TableHead class="w-[100px]">年月日</TableHead>
