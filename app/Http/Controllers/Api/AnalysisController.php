@@ -9,6 +9,7 @@ use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use App\Services\AnalysisServices;
 use App\Services\DecileServices;
+use App\Services\RFMServices;
 
 class AnalysisController extends Controller{
    
@@ -31,6 +32,21 @@ class AnalysisController extends Controller{
         if($request->type === 'decile'){
             list($data, $labels, $totals) = DecileServices::decile($subQuery);
         }
+
+        if($request->type === 'rfm'){
+            list($data, $totals, $eachCount) = RFMServices::rfm(
+                $subQuery,
+                $request->rfmPrms,
+                $request->endDate
+            );
+
+            return response()->json([
+            'data' => $data,
+            'type' => $request->type,
+            'eachCount' => $eachCount,
+            'totals' => $totals,
+            ], Response::HTTP_OK);
+            }
 
         return response()->json([
             'data' => $data,
